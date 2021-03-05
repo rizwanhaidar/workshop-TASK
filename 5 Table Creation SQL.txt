@@ -1,0 +1,193 @@
+//--------Class table-------------
+
+create table Class(
+	ClassID int,
+     	C_Title varchar2(50) NOT NULL,
+     	C_Agegroup varchar2(50)	NOT NULL,
+     	C_GenderBasedSection NUMBER(1) NOT NULL,
+     	C_NeedBasedSection NUMBER(1) NOT NULL,
+     	C_Section varchar2(5),
+     	C_StartDate date NOT NULL,     
+     	CONSTRAINT ck_testbool_gd CHECK (C_GenderBasedSection IN (1,0)),
+     	CONSTRAINT ck_testbool1_gd CHECK (C_NeedBasedSection IN (1,0)),
+     	PRIMARY KEY (ClassID)
+);
+
+//--------Guardian table--------
+
+create table Guardian(
+	GuardianID int NOT NULL,
+	G_Gender varchar2(1)  NOT NULL,
+	G_Name varchar2(50)	 NOT NULL,
+     	G_CNIC varchar2(50)	 NOT NULL,
+	G_Contact varchar2(50)	 NOT NULL,
+	G_Address varchar2(50)	 NOT NULL,
+	G_Relation varchar2(50)	 NOT NULL,		
+	G_Email varchar2(50)    ,
+	PRIMARY KEY (GuardianID)
+);
+
+
+//--------Guardian Update Table-----------
+
+create table GuardianUpdates(
+	UpdateID int NOT NULL,
+	G_ID int  NOT NULL,
+	G_Gender varchar2(1),
+	G_Name varchar2(50),
+     	G_CNIC varchar2(50),
+	G_Contact varchar2(50),
+	G_Address varchar2(50),
+	G_Relation varchar2(50),		
+	G_Email varchar2(50),
+	G_Replacement int NOT NULL,
+	PRIMARY KEY (UpdateID),
+	FOREIGN KEY (G_ID) references Guardian(GuardianID)
+);
+
+//--------------Student table----------
+
+create table Student(
+	StudentID int NOT NULL,
+     	S_Name varchar2(50) NOT NULL,
+     	S_CNIC varchar2(50) NOT NULL,
+     	S_Gender varchar2(3) NOT NULL,
+     	S_Photocode varchar2(20) NOT NULL,
+     	S_DOB date NOT NULL,
+     	S_performance varchar2(20) NOT NULL,
+     	CLASS_ASSIGN_DATE date NOT NULL,
+     	ClassID int NOT NULL,	
+     	GID INT NOT NULL,
+	PRIMARY KEY (StudentID), 
+     	FOREIGN KEY (ClassID) references Class (ClassID),
+	FOREIGN KEY (GID) references Guardian (GuardianID)
+);
+
+//--------------StudentUpdate table----------
+
+create table StudentUpdates(
+     	UpdateID int NOT NULL,
+     	Updated_ON date NOT NULL,
+     	S_Name varchar2(50) NOT NULL,
+     	S_CNIC varchar2(50) NOT NULL,
+     	S_Gender varchar2(1) NOT NULL,
+     	S_Photocode varchar2(20),
+     	S_DOB date,
+     	S_performance varchar2(20),
+     	CLASS_ASSIGN_DATE date,
+	ClassID int NOT NULL,
+	SID int NOT NULL,
+	GID INT NOT NULL,
+     	PRIMARY KEY (UpdateID ),
+	FOREIGN KEY (SID) references Student (StudentID),
+	FOREIGN KEY (ClassID) references Class (ClassID),
+	FOREIGN KEY (GID) references Guardian (GuardianID)	
+);
+
+//-------------Class Change History Table-------
+
+create table ClassChangeHistory(
+	CCHID int NOT NULL,
+	CCH_FromClass INT NOT NULL,
+	CCH_Date  varchar2(50) NOT NULL,
+	CCH_ToClass INT NOT NULL,
+	CCH_Reason  varchar2(50) NOT NULL,
+	CCH_Time varchar2(10) NOT NULL,
+    	Is_CLASS NUMBER(1) NOT NULL,
+    	Is_SECTION NUMBER(1) NOT NULL,
+	SID INT NOT NULL,
+    	CONSTRAINT ck_testbool2_gd CHECK (Is_CLASS IN (1,0)),
+    	CONSTRAINT ck_testbool3_gd CHECK (Is_SECTION IN (1,0)),
+	PRIMARY KEY (CCHID)	,
+	FOREIGN KEY (SID) references Student (StudentID),
+	FOREIGN KEY (CCH_ToClass) references Class (ClassID),
+	FOREIGN KEY (CCH_FromClass) references Class (ClassID)	
+);
+
+
+//---------Parent Table-----------
+
+create table Parent(
+	ParentID int NOT NULL,
+	T_Gender varchar2(1)  NOT NULL,
+	T_Name varchar2(50)  NOT NULL,
+	T_CNIC varchar2(50)  NOT NULL Unique,
+	T_Contactno varchar2(50) ,
+	T_Email varchar2(50)	,
+	T_Address varchar2(50) NOT NULL,
+	T_Noofkids varchar2(10)	,
+	T_WorkingOrganization varchar2(50) ,
+	PRIMARY KEY (ParentID,T_Gender)		
+);
+
+//---------Parent Update Table-----------
+
+create table ParentUpdates(
+	UpdateID int NOT NULL,
+	ParentID int NOT NULL,
+	Gender varchar(1),
+	T_Gender varchar2(1),
+	T_Name varchar2(50) ,
+     	T_CNIC varchar2(50) Unique,
+	T_Contactno varchar2(50)	,
+	T_Email varchar2(50)	,
+	T_Address varchar2(50)		,
+	T_Noofkids varchar2(10)		,
+	T_WorkingOrganization varchar2(50),
+	PRIMARY KEY (UpdateID),
+	FOREIGN KEY (ParentID,Gender) references Parent (ParentID,T_Gender)	
+);
+
+//--------Relation Table-----------
+
+create table Relation(
+	StudentID int NOT NULL,
+	ParentID int NOT NULL,
+	T_Gender varchar2(1)  NOT NULL,
+	FOREIGN KEY (ParentID,T_Gender) references Parent (ParentID,T_Gender),
+	FOREIGN KEY (StudentID) references Student (StudentID)
+);
+
+//--------Course Table-----------
+
+create table Course(
+	CourseID int NOT NULL,
+	Course_Name varchar2(50)  NOT NULL,
+	Course_StartDate date NOT NULL,
+	Course_Endstatus NUMBER(1) NOT NULL,
+	course_Duration_Months NUMBER(2) NOT NULL,
+	Course_Fee int NOT NULL,
+        CONSTRAINT ck_testbool_es CHECK (Course_Endstatus IN (1,0)),
+        PRIMARY KEY (CourseID)
+);
+
+
+//---------Fee Table----------
+
+create table Fee(
+	VoucherNo int NOT NULL,
+	Discount varchar2(10) NOT NULL,
+	DiscountReason varchar2(50) ,
+	DiscountBool NUMBER(1) NOT NULL,
+	StudentID int NOT NULL,
+	CourseID int NOT NULL,
+	CONSTRAINT ck_testbool_db CHECK (DiscountBool IN (1,0)),
+	PRIMARY KEY (VoucherNo),
+	FOREIGN KEY (StudentID) references Student (StudentID),
+	FOREIGN KEY (CourseID) references Course (CourseID)	
+);
+
+
+//-------Registers Table-----
+
+create table Registration(
+	RegistrationNo int NOT NULL,
+	R_Time varchar2(10) NOT NULL,
+	R_Date date NOT NULL,
+	S_ID int NOT NULL,
+	C_ID int NOT NULL,
+	PRIMARY KEY (RegistrationNo),
+	FOREIGN KEY (S_ID) references Student (StudentID),
+	FOREIGN KEY (C_ID) references Course (CourseID)
+);
+
